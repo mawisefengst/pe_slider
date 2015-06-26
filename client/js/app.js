@@ -1,0 +1,1 @@
+var imageSliderApp  = angular.module("imageSliderApp",[]);

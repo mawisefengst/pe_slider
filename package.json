@@ -1,0 +1,12 @@
+{
+	"name": "version",
+	"version":"0.0.1",
+	"dependencies": {
+	    "express": "~4.12.4",
+	    "mongoose": "~4.0.4",
+	    "body-parser": "~1.12.4",
+	    "multiparty": "~4.1.2",
+	    "formidable": "~1.0.17",
+	    "fs-extra": "~0.19.0"
+	}
+}
