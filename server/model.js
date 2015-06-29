@@ -34,7 +34,7 @@ var ImagePair = Schema({
    id : {type : Number, index:true},
    created: {type: Date, default: Date.now},
    updated: {type: Date, default: Date.now},
-   off_image_url: {
+    off_image_url: {
 		type: String,
 		trim: true,
 		default: "",

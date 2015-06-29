@@ -19,10 +19,8 @@
       </nav>
       
 
-        <form method="post" enctype="multipart/form-data" ng-submit="createNewUser();" action="/admin/upload">
-
-         
-
+        <form method="post" enctype="multipart/form-data" ng-submit="saveNewOne();">
+          
           <h1>Upload Image</h1>
 
           <div class="row">
@@ -47,7 +45,7 @@
                <div class="formItem">
                  <div class="formLabel">Off Image</div>
                  <div class="formValue filebtn">
-                  <input type="file" name="off-image" id="off-image" file-model="off-image" />
+                  <input type="file" name="off-image" id="offimage" file-model="offImage" />
                 </div>
               </div>
 
@@ -74,7 +72,7 @@
                <div class="formItem">
                      <div class="formLabel">On Image</div>
                      <div class="formValue filebtn ">
-                      <input type="file" name="on-image" id="on-image" file-model="on-image" />
+                      <input type="file" name="on-image" id="onimage" file-model="onImage" />
                     </div>
                </div>
 
@@ -89,7 +87,7 @@
 
         </form> 
 
-         <div class="error">{{registrant.errorMessage}}</div>
+         <div class="error">{{imagePair.errorMessage}}</div>
 
       </div>
 
