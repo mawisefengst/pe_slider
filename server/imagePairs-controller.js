@@ -16,15 +16,22 @@ var getErrorMessage = function(err) {
 };
 
 
-module.exports.saveNewPair = function(req,res){
-   //res.status(400).send({"message": "I"});
-   /*var imagePair_Obj = new ImagePair();
-   imagePair_Obj.save(function(err,result){
-		if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-	    }else return res.json(result);
-    });*/
-  // res.end();*/
+module.exports.showallimage = function(req,res){
+    ImagePair.find({
+    	 off_image_url: {"$ne":"comming soon"},
+    	 on_image_url: {"$ne":"comming soon"}
+	},function(err, result) {
+	  if (err) return console.error(err);
+	  res.json(result);
+	});
+};
 
+
+module.exports.editExistedPair = function(){
+
+};
+
+module.exports.saveNewPair = function(req,res){
   	var form = new formidable.IncomingForm();
 	var result_from_DB;
 	form.maxFieldsSize = 5 * 1024 * 1024;
@@ -32,13 +39,6 @@ module.exports.saveNewPair = function(req,res){
 	form.encoding = 'utf-8';
 	form.keepExtensions = true;
     form.parse(req, function(err, fields, files) {
-
-    	//console.log(fields);
-
-    	//console.log(files);
-
-    	//console.log(files);
-    	
     	if (err) {
           console.error(err.message);
           return;
@@ -141,7 +141,9 @@ module.exports.saveNewPair = function(req,res){
 				result_from_DB.on_image_url = new_file_name_1;
 				result_from_DB.save(function(err,result){
 					if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-				    }else return res.json(result);
+				    }else{
+					   res.status(200).send({"message":"success"});
+				    }
 			    });
 			}
 		});
