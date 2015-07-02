@@ -10,7 +10,7 @@
    
 
 
-   <div ng-controller="imageSliderController" class="wrapper container">
+   <div ng-controller="imageSlideUpdateController" class="wrapper container">
 
        <nav class="navbar navbar-default">
 
@@ -19,7 +19,9 @@
       </nav>
       
 
-        <form method="post" enctype="multipart/form-data" ng-submit="saveNewOne();">
+        <form method="post" enctype="multipart/form-data" ng-submit="updateNewOne();">
+
+          <input type="hidden" name="_id" value="{{imagePair._id}}">
           
           <h1>Upload Image</h1>
 
@@ -45,8 +47,9 @@
                <div class="formItem">
                  <div class="formLabel">Off Image</div>
                  <div class="formValue filebtn">
-                  <img ng-src="{{offImage}}" />
+
                   <input type="file" name="off-image" id="offimage" file-model="offImage" />
+                   <img ng-src="{{imagePair.off_image_url}}" />
                 </div>
               </div>
 
@@ -73,8 +76,8 @@
                <div class="formItem">
                      <div class="formLabel">On Image</div>
                      <div class="formValue filebtn ">
-                      <img ng-src="{{onImage}}" />
                       <input type="file" name="on-image" id="onimage" file-model="onImage" />
+                       <img ng-src="{{imagePair.on_image_url}}" />
                     </div>
                </div>
 

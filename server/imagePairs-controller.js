@@ -2,7 +2,8 @@ var models = require("./model");
 
 var ImagePair 	= models.ImagePair,
  	fs 			= require('fs-extra'),
-    formidable  = require("formidable");
+    formidable  = require("formidable"),
+    ObjectId    = require("mongoose").Types.ObjectId;
 
 var getErrorMessage = function(err) {
 	var message = '';
@@ -27,9 +28,93 @@ module.exports.showallimage = function(req,res){
 };
 
 
-module.exports.editExistedPair = function(){
+module.exports.showExistedPair = function(req,res){
+	var imageId = req.params.id;
+	ImagePair.findOne({"_id":imageId},function(err,result){
+		//console.log(result);
+		res.json(result);
+	});
+};
+
+module.exports.editExistedPair = function(req,res){
+	var form = new formidable.IncomingForm();
+	var result_from_DB;
+	form.maxFieldsSize = 5 * 1024 * 1024;
+	form.uploadDir =  __dirname + "/upload/";
+	form.encoding = 'utf-8';
+	form.keepExtensions = true;
+	form.parse(req, function(err, fields, files) {
+
+    });
+	form.on('field', function(name, value) {
+    	result_from_DB = JSON.parse(value);
+		if(typeof(value) != "undefined"){
+			var current_time = new Date();
+			/*ImagePair.update({_id:new ObjectId(object_._id)},{
+				$set:{
+	      			off_image_url_title : object_.off_image_url_title,
+	      			off_image_url_description : object_.off_image_url_description,
+	      			on_image_url_title : object_.on_image_url_title,
+	      			on_image_url_description : object_.on_image_url_description,
+	      			updated: current_time
+				}
+			},function(err, numberAffected){
+    			 console.log(numberAffected);
+			});*/
+		}else{
+			//return res.status(400).send({"message":"Please enter title,description and upload image!"});
+		}
+	}); 
+
+	form.on("end", function(fields,files){
+        var temp_path = this.openedFiles[0].path;
+        var file_name = this.openedFiles[0].name;
+        var dateObj = new Date();
+        var fileName =  dateObj.getFullYear() + '/' + (dateObj.getMonth()+1) + '/' + dateObj.getDate() + '/'  +  file_name ;
+		var new_file_name =  __dirname + "/upload/" + fileName;
+		fs.copy(temp_path, new_file_name, function(err) {  
+			if (err) console.error(err);
+			else {
+				fs.unlink(temp_path, function (err) { if (err) throw err;});
+				result_from_DB.off_image_url = new_file_name;
+			}
+		});
+        
+        //console.log(result_from_DB);
+		var temp_path_1 = this.openedFiles[1].path;
+        var file_name_1 = this.openedFiles[1].name;
+        var dateObj = new Date();
+        var fileName_1 =  dateObj.getFullYear() + '/' + (dateObj.getMonth()+1) + '/' + dateObj.getDate() + '/'  +  file_name_1 ;
+		var new_file_name_1 =  __dirname + "/upload/" + fileName_1;
+		fs.copy(temp_path_1, new_file_name_1, function(err) {  
+			if (err) console.error(err);
+			else {
+				//console.log(result_from_DB);
+				fs.unlink(temp_path_1, function (err) { if (err) throw err;});
+				result_from_DB.on_image_url = new_file_name_1;
+				ImagePair.update({_id:new ObjectId(result_from_DB._id)},{
+					$set:{
+		      			off_image_url_title : result_from_DB.off_image_url_title,
+		      			off_image_url_description : result_from_DB.off_image_url_description,
+		      			on_image_url_title : result_from_DB.on_image_url_title,
+		      			on_image_url_description : result_from_DB.on_image_url_description,
+		      			on_image_url : result_from_DB.on_image_url,
+		      			off_image_url : result_from_DB.off_image_url,
+		      			updated: dateObj
+					}
+				},function(err, numberAffected){
+	    			 if(err) { console.log(error)}
+	    			 else  res.status(200).send({"message":"success"});
+				});
+			}
+		});
+	});
+
+
+     
 
 };
+
 
 module.exports.saveNewPair = function(req,res){
   	var form = new formidable.IncomingForm();
@@ -77,12 +162,8 @@ module.exports.saveNewPair = function(req,res){
     });
 
     form.on('field', function(name, value) {
-
-
     	//console.log(value);
-
     	//console.log(name);
-    	
     	var object_ = value;
 		//var registrant = new Registrant(JSON.parse(value));
 		//console.log(value);
@@ -93,7 +174,9 @@ module.exports.saveNewPair = function(req,res){
 	    	//for validation
 		    imagePair_Obj.save(function(err,result){
 				if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-			    }else result_from_DB = result;
+			    }else{
+			    	res.status(200).send({"message":"success"});
+			    }
 		    });
 		}else{
 			//return res.status(400).send({"message":"Please enter title,description and upload image!"});
@@ -119,10 +202,10 @@ module.exports.saveNewPair = function(req,res){
 			else {
 				fs.unlink(temp_path, function (err) { if (err) throw err;});
 				result_from_DB.off_image_url = new_file_name;
-				/*result_from_DB.save(function(err,result){
+				result_from_DB.save(function(err,result){
 					if (err) {return res.status(400).send({"message":getErrorMessage(err)});
 				    }else return res.json(result);
-			    });*/
+			    });
 			}
 		});
         

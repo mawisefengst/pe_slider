@@ -4,12 +4,6 @@ imageSliderApp
 	$scope.registrant.errorMessage = "dddddd";
 	$scope.saveNewOne = function(){
 	    var fd = new FormData();
-	    //fd.append('offImage', $scope.offImage);
-	    //fd.append('onImage', $scope.onImage);
-	   /* for(var key in $scope.registrant){
-	       fd.append(key, $scope.registrant[key]);
-	       console.log(key + " " + $scope.registrant[key]);
-	    }*/
 	    if(typeof $scope.imagePair != "undefined" && typeof $scope.offImage != "undefined" && typeof $scope.onImage != "undefined") {
 	    	fd.append("imagePair", JSON.stringify($scope.imagePair));
 	    	fd.append('offImage', $scope.offImage);
@@ -20,9 +14,6 @@ imageSliderApp
 		        headers: {'Content-Type': undefined}
 		    })
 		    .success(function(res) {
-		        //console.log(response);
-		        //$scope.imagePair = response;
-		        //load thanks.html
 		        if(res.message == "success") location.href="/admin/";
 		    }).error(function(response) {
 		        $scope.imagePair.errorMessage = response.message;
@@ -30,7 +21,6 @@ imageSliderApp
 	    }else{
 	    	alert("All fields are required.");
 	    }
-
 	};
 }])
 
@@ -47,6 +37,36 @@ imageSliderApp
 	});
 }])
 
+.controller("imageSlideUpdateController",["$scope","imageFactory","$http",function($scope,imageFactory,$http){
+	var imageId = location.href.substring(location.href.lastIndexOf("/") + 1);
+	var imageInc_promise = imageFactory.getSingelPicture(imageId);
+	imageInc_promise.then(function(data){
+		$scope.imagePair = data;
+		$scope.imagePair.off_image_url = $scope.imagePair.off_image_url.substring($scope.imagePair.off_image_url.indexOf("/upload"));
+		$scope.imagePair.on_image_url = $scope.imagePair.on_image_url.substring($scope.imagePair.on_image_url.indexOf("/upload"));
+	},function(status){
+		console.log(status);
+	});
+
+   	$scope.updateNewOne = function(){
+   		//55944ae780ab62cc22035b2f
+	    var fd = new FormData();
+    	fd.append("imagePair", JSON.stringify($scope.imagePair));
+    	fd.append('offImage', $scope.offImage);
+	    fd.append('onImage', $scope.onImage);
+	    //console.log(fd.toString());
+	    $http.post('/admin/update', fd, {
+	        transformRequest: angular.identity,
+	        headers: {'Content-Type': undefined}
+	    })
+	    .success(function(res) {
+	        if(res.message == "success") location.href="/admin/";
+	    }).error(function(response) {
+	        $scope.imagePair.errorMessage = response.message;
+	    });
+	};
+}])
+
 .factory("imageFactory",["$http","$q",function($http,$q){
 	var getAllPicture = function(){
 		var defered = $q.defer();
@@ -58,9 +78,21 @@ imageSliderApp
 				 defered.reject(error);
 			});
 		return defered.promise;
+	};
+	var getSingelPicture = function(objectId){
+		var defered = $q.defer();
+		$http.get("/service/image/"+ objectId)
+			.success(function(result){
+				 defered.resolve(result);
+			}).
+			error(function(error){
+				 defered.reject(error);
+			});
+		return defered.promise;
 	}
 	return{
-		getAllPicture: getAllPicture
+		getAllPicture: getAllPicture,
+		getSingelPicture : getSingelPicture
 	}
 
 }])

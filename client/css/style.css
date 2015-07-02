@@ -592,6 +592,12 @@ sup.left{
 	margin: 0 auto;
 }
 
+img{
+	max-width: 300px;
+}
+
+textarea.form-control{height: 180px;}
+
 @media screen and (max-width: 736px){
 	#site-name{height: }
 	.buyticket{
