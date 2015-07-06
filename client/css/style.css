@@ -598,6 +598,12 @@ img{
 
 textarea.form-control{height: 180px;}
 
+.row{
+	margin-bottom: 40px;
+	margin-top: 40px
+}
+
+
 @media screen and (max-width: 736px){
 	#site-name{height: }
 	.buyticket{

@@ -52,8 +52,8 @@ imageSliderApp
    		//55944ae780ab62cc22035b2f
 	    var fd = new FormData();
     	fd.append("imagePair", JSON.stringify($scope.imagePair));
-    	fd.append('offImage', $scope.offImage);
-	    fd.append('onImage', $scope.onImage);
+    	if(typeof $scope.offImage != "undefined") fd.append('offImage', $scope.offImage);
+	    if(typeof $scope.onImage != "undefined") fd.append('onImage', $scope.onImage);
 	    //console.log(fd.toString());
 	    $http.post('/admin/update', fd, {
 	        transformRequest: angular.identity,
