@@ -72,9 +72,25 @@ var ImagePair = Schema({
 	}
 });
 
-var exportsObj = {
-	ImagePair :mongoose.model("ImagePair", ImagePair),
-	ProjectIns : mongoose.model("Project", projectIns) 
-}
+var UserSchema = Schema({
+    username: {
+		type: String,
+		trim: true,
+		default: "",
+		validate: [validator, "Please enter your username"]
+	},
+    password: {
+		type: String,
+		trim: true,
+		default: "",
+		validate: [validator, "Please enter your password"]
+	}
+});
 
-module.exports = exportsObj;
+
+
+module.exports = {
+	ImagePair :mongoose.model("ImagePair", ImagePair),
+	ProjectIns : mongoose.model("Project", projectIns),
+	UserSchema: mongoose.model("Admin",UserSchema)
+};

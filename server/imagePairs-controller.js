@@ -24,7 +24,7 @@ module.exports.showallimage = function(req,res){
 	},function(err, result) {
 	  if (err) return console.error(err);
 	  res.json(result);
-	});
+	}).limit(20);
 };
 
 
@@ -170,6 +170,14 @@ module.exports.editExistedPair = function(req,res){
 
 
 module.exports.saveNewPair = function(req,res){
+	//res.status(400).send({"message": "I"});
+   /*var imagePair_Obj = new ImagePair();
+   imagePair_Obj.save(function(err,result){
+		if (err) {return res.status(400).send({"message":getErrorMessage(err)});
+	    }else return res.json(result);
+    });*/
+  // res.end();*/
+
   	var form = new formidable.IncomingForm();
 	var result_from_DB;
 	form.maxFieldsSize = 5 * 1024 * 1024;
@@ -177,6 +185,13 @@ module.exports.saveNewPair = function(req,res){
 	form.encoding = 'utf-8';
 	form.keepExtensions = true;
     form.parse(req, function(err, fields, files) {
+
+    	//console.log(fields);
+
+    	//console.log(files);
+
+    	//console.log(files);
+    	
     	if (err) {
           console.error(err.message);
           return;
@@ -215,8 +230,12 @@ module.exports.saveNewPair = function(req,res){
     });
 
     form.on('field', function(name, value) {
+
+
     	//console.log(value);
+
     	//console.log(name);
+    	
     	var object_ = value;
 		//var registrant = new Registrant(JSON.parse(value));
 		//console.log(value);
@@ -227,9 +246,7 @@ module.exports.saveNewPair = function(req,res){
 	    	//for validation
 		    imagePair_Obj.save(function(err,result){
 				if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-			    }else{
-			    	res.status(200).send({"message":"success"});
-			    }
+			    }else result_from_DB = result;
 		    });
 		}else{
 			//return res.status(400).send({"message":"Please enter title,description and upload image!"});
@@ -250,38 +267,34 @@ module.exports.saveNewPair = function(req,res){
         var dateObj = new Date();
         var fileName =  dateObj.getFullYear() + '/' + (dateObj.getMonth()+1) + '/' + dateObj.getDate() + '/'  +  file_name ;
 		var new_file_name =  __dirname + "/upload/" + fileName;
-		fs.copy(temp_path, new_file_name, function(err) {  
-			if (err) console.error(err);
-			else {
-				fs.unlink(temp_path, function (err) { if (err) throw err;});
-				result_from_DB.off_image_url = new_file_name;
-				result_from_DB.save(function(err,result){
-					if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-				    }else return res.json(result);
-			    });
-			}
-		});
-        
-        //console.log(result_from_DB);
 
 		var temp_path_1 = this.openedFiles[1].path;
         var file_name_1 = this.openedFiles[1].name;
         var dateObj = new Date();
         var fileName_1 =  dateObj.getFullYear() + '/' + (dateObj.getMonth()+1) + '/' + dateObj.getDate() + '/'  +  file_name_1 ;
 		var new_file_name_1 =  __dirname + "/upload/" + fileName_1;
-		fs.copy(temp_path_1, new_file_name_1, function(err) {  
+
+
+		fs.copy(temp_path, new_file_name, function(err) {  
 			if (err) console.error(err);
 			else {
-				//console.log(result_from_DB);
-				fs.unlink(temp_path_1, function (err) { if (err) throw err;});
-				result_from_DB.on_image_url = new_file_name_1;
-				result_from_DB.save(function(err,result){
-					if (err) {return res.status(400).send({"message":getErrorMessage(err)});
-				    }else{
-					   res.status(200).send({"message":"success"});
-				    }
-			    });
+				fs.unlink(temp_path, function (err) { if (err) throw err;});
+				result_from_DB.off_image_url = new_file_name;
+				fs.copy(temp_path_1, new_file_name_1, function(err) {  
+					if (err) console.error(err);
+					else {
+						//console.log(result_from_DB);
+						fs.unlink(temp_path_1, function (err) { if (err) throw err;});
+						result_from_DB.on_image_url = new_file_name_1;
+						result_from_DB.save(function(err,result){
+							if (err) return res.status(400).send({"message":getErrorMessage(err)});
+						    else res.status(200).send({"message":"success"});
+					    });
+					}
+				});
 			}
 		});
+
 	});
+
 } 
