@@ -17,79 +17,91 @@ var imagePairsController    = require("./imagePairs-controller"),
 
 var router  = function(app){
 
-    app.use(cookieParser());
+
 	app.use(bodyParser.urlencoded({
 	  extended: true
 	}));
+	app.use(cookieParser());
 	
 	// For session data:
-	app.use(expressSession({secret: 'tannedkrab',
+	app.use(expressSession({
+				secret: 'tannedkrab',
 	            resave: true,
 	            saveUninitialized: true,
-	            key: 'session'
-    }) )
-
-
+	            cookie:{
+				     maxAge : 360000 // one hour in millis
+				}
+    }));
 
 	app.use(passport.initialize());
 	app.use(passport.session());
+
+	passport.use(new LocalStrategy(
+		function(username, password, done){
+	       User.findOne({"username" : username}, 
+		       	function(err,user){
+		       		if(err) return done(null,false);
+		       		if(!user){
+		       			console.log("User Not Found with username " + username);
+		       		    done(null,null);
+		       		}
+		       		if(!isValidPassword(user, password)){
+		       			console.log("Invalid Password");
+		       		    done(null,null);
+		       		}
+	       		    /*var newUser = new User();
+					newUser.username = username;
+					newUser.password = createHash(password);
+					newUser.save(function(err){
+						if(err){
+							console.log("Error in Saving user:" + err);
+							throw err;
+						}
+						console.log("User Registration Successful");
+						return done(null, newUser);
+					})*/ 
+		       	    done(null,user);
+		       	}
+	       )
+		}
+	));
 
 	passport.serializeUser(function(user,done){
 		done(null,user._id);
 	});
 
 	passport.deserializeUser(function(id,done) {
-		User.findById(id, function(err,user){
+		/*User.findById(id, function(err,user){
 			done(err,user);
-		});
+		});*/
+		done(null,{id:id,name:id});
 	});
-
-
-	passport.use("login", new LocalStrategy({
-			passReqToCallback : true
-		},
-		function(req,username, password, done){
-	       User.findOne({"username" : username}, 
-	       	function(err,user){
-	       		if(err) return done(err);
-	       		if(!user){
-	       			console.log("User Not Found with username " + username);
-	       			return done(null,false, req,falsh('message','User Not Found'));
-	       		}
-	       		if(!isValidPassword(user, password)){
-	       			console.log("Invalid Password");
-	       			return done(null,false,req.flash('message','Invalid Password'));
-	       		}else return done(null,user);
-	       	}
-	       )
-		}
-	));
                                
-	passport.use(new LocalStrategy(function(username,password,done){
-				User.findOne({"username": username},function(err, user){
-					if(err){
-						console.log("Error in SingUp: " + err);
-						return done(err);
-					}
-					if(user){
-						console.log("User already exists");
-						return done(null,false, req.flash("message","User Already Exists"));
-					}else{
-						var newUser = new User();
-						newUser.username = username;
-						newUser.password = createHash(password);
-						newUser.save(function(err){
-							if(err){
-								console.log("Error in Saving user:" + err);
-								throw err;
-							}
-							console.log("User Registration Successful");
-							return done(null, newUser);
-						})
-					}
-				});
+	/*passport.use(new LocalStrategy(function(username,password,done){
+			User.findOne({"username": username},function(err, user){
+				if(err){
+					console.log("Error in SingUp: " + err);
+					return done(err);
+				}
+				if(user){
+					console.log("User already exists");
+					return done(null,false, req.flash("message","User Already Exists"));
+				}else{
+					var newUser = new User();
+					newUser.username = username;
+					newUser.password = createHash(password);
+					newUser.save(function(err){
+						if(err){
+							console.log("Error in Saving user:" + err);
+							throw err;
+						}
+						console.log("User Registration Successful");
+						return done(null, newUser);
+					})
+				}
+			});
 		}
-	));
+	));*/
 
 
 	app.get("/",function(req,res){
@@ -102,33 +114,54 @@ var router  = function(app){
 	});*/
 
 	//app.get("/admin")
-     
-    app.get("/admin",function(req,res){
-		var resolved_path = path.resolve(__dirname+'../../client/view/signup.html');
-		res.sendFile(resolved_path);
-	}); 
+	app.get('/admin', requireAuth, adminHandler);
 
-    app.post("/admin/",passport.authenticate("login",{
-    	successRedirect : "/admin/list",
-    	failureRedirect : "/signup",
-    	failureFalsh: true
-    }));
+	function requireAuth(req, res, next){
+	  //console.log(req);
+	  // check if the user is logged in
+	  if(!req.isAuthenticated()){
+	   // req.session.messages = "You need to login to view this page";
+	    res.redirect('/admin/signup');
+	  }
+	  next();
+	}
 
-    app.get("/admin/list",function(req,res){
-		var resolved_path = path.resolve(__dirname+'../../client/view/list.html');
-		res.sendFile(resolved_path);
-	});
+	function adminHandler(req, res, next){
+	  console.log(req);
+	}
+
 
 	app.get("/admin/signup",function(req,res){
 		var resolved_path = path.resolve(__dirname+'../../client/view/signup.html');
 		res.sendFile(resolved_path);
 	});
 
-	app.post("/admin/signup",passport.authenticate("local"),function(req,res){
-		//var resolved_path = path.resolve(__dirname+'../../client/view/list.html');
-		//console.log(arguments);
-		res.json(req.user);
+
+   /* app.post('/admin/signup', 
+	  passport.authenticate('local', { failureRedirect: '/admin/signup', failureFlash: true }),
+	  function(req, res) {
+	    res.redirect('/admin/list');
+	 });*/
+
+
+    app.post('/admin/signup', passport.authenticate('local'), function(req,res) {
+    	console.log(req.isAuthenticated());
+    	//console.log(user);
+        //if(!user) res.redirect('/admin/signup');
+        res.redirect('/admin/list');
 	});
+  
+
+    app.get("/admin/list",requireAuth,function(req,res){
+		var resolved_path = path.resolve(__dirname+'../../client/view/list.html');
+		res.sendFile(resolved_path);
+	});
+
+	/*app.post("/login" ,passport.authenticate('local',{
+			successRedirect : "/",
+			failureRedirect : "/login",
+		})
+	);*/
 
 	app.get("/admin/update/:id",function(req,res){
 		var id = req.params.id;
@@ -148,7 +181,13 @@ var router  = function(app){
 	app.post("/admin/upload", imagePairsController.saveNewPair);
 	app.post("/admin/update", imagePairsController.editExistedPair);
 	app.get("/service/image/:id/",imagePairsController.showExistedPair);
+ 
+	app.get("api/login",function(){
+
+	})
     
+
+
 }
 
 module.exports = router;
